@@ -11,6 +11,9 @@ This project is a **Minimum Viable Product (MVP)** developed to explore Moodle p
 - **Train forecasts:** Displays upcoming train information, including time, destination, line, and estimated remaining time.
 - **Moodle rendering:** Uses Moodle's renderer system and Mustache templates.
 - **Responsive interface:** Includes custom CSS for a clean, mobile-friendly layout.
+- **Multilingual:** All user-facing text uses Moodle language strings (English and Spanish).
+- **Access control:** Protected by the `local/metrovalencia:view` capability (granted to authenticated users by default).
+- **Privacy API:** Implements a `null_provider`; the plugin stores no personal data.
 - **Error handling:** Displays a user-friendly notification when station or forecast data cannot be retrieved.
 
 ## Technologies
@@ -24,7 +27,7 @@ This project is a **Minimum Viable Product (MVP)** developed to explore Moodle p
 
 ## Requirements
 
-- Moodle 5.3 (development environment).
+- Moodle 5.0 or later (developed and tested on 5.3).
 - Internet access to reach the MetroAPI service.
 
 ## Installation
@@ -33,7 +36,8 @@ This project is a **Minimum Viable Product (MVP)** developed to explore Moodle p
 2. Copy the `metrovalencia` directory into your Moodle installation's `local/` directory.
 3. Log in as a site administrator.
 4. Visit **Site administration → Notifications** to complete the plugin installation.
-5. Open the plugin at `/local/metrovalencia/index.php`.
+5. Purge caches (**Site administration → Development → Purge caches**) so Moodle picks up the stylesheet and language strings.
+6. Open the plugin at `/local/metrovalencia/index.php`.
 
 ## API
 
@@ -47,38 +51,43 @@ The API is an external dependency, so its availability and response format may a
 
 ```text
 local/metrovalencia/
-├── assets/
-│   ├── css/
-│   └── styles.css
 ├── classes/
+│   ├── output/
+│   │   ├── metrovalencia_page.php
+│   │   └── renderer.php
+│   ├── privacy/
+│   │   └── provider.php
+│   ├── hook_callbacks.php
 │   ├── metrovalencia_api.php
-│   ├── page.php
-│   └── output/
-│       ├── metrovalencia_page.php
-│       └── renderer.php
+│   └── page.php
+├── db/
+│   ├── access.php
+│   └── hooks.php
 ├── lang/
-│   └── en/
-│       └── local_metrovalencia.php
+│   ├── en/local_metrovalencia.php
+│   └── es/local_metrovalencia.php
 ├── templates/
 │   └── metrovalencia_page.mustache
+├── CHANGELOG.md
+├── README.md
 ├── index.php
-├── version.php
-└── README.md
+├── styles.css
+└── version.php
 ```
 
 ## Current Status
 
-**MVP — Initial implementation**
+**MVP — v0.1.0 (alpha)**
 
 The core functionality is implemented: retrieving stations, selecting a station, fetching train forecasts, and displaying the results within Moodle.
 
-Potential future improvements include automated tests, caching, and additional interface features.
+Potential future improvements are listed below.
 
 ### Future Improvements
 
-- **Multilingual support:** Move user-facing text into Moodle language strings, keeping the English strings in `lang/en/` and adding their Spanish equivalents in `lang/es/`.
-- **Automated testing:** Add unit and integration tests.
-- **Caching:** Reduce external API requests and improve performance.
+- **Caching:** Use the Moodle Cache API to reduce external API requests (long TTL for stations, short TTL for forecasts).
+- **Automated testing:** Add PHPUnit tests (the Moodle `curl` class can mock API responses).
+- **Live refresh:** Add an AMD module and an external function so forecasts update without reloading the page.
 - **Additional features:** Expand the plugin with new functionality.
 
 ## License

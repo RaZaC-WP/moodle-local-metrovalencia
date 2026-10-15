@@ -1,36 +1,78 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_metrovalencia/metrovalencia_page
+
+    Station selector and upcoming train forecasts.
+
+    Context variables required for this template:
+    * stations - List of stations (id, name, selected)
+    * hasstations - Whether there are stations to show
+    * forecasts - List of forecasts (time, destination, line, remaining)
+    * hasforecasts - Whether there are forecasts to show
+    * selectedstation - Name of the selected station
+
+    Example context (json):
+    {
+        "stations": [
+            {"id": 1, "name": "Ayora", "selected": true},
+            {"id": 2, "name": "Colón", "selected": false}
+        ],
+        "hasstations": true,
+        "forecasts": [
+            {"time": "10:15", "destination": "Bétera", "line": "2", "remaining": "3 min 20 s"}
+        ],
+        "hasforecasts": true,
+        "selectedstation": "Ayora"
+    }
+}}
 <div class="metrovalencia-page">
 
-    <form method="get" action="index.php" class="mb-4">
-        <div class="form-group">
-            <label for="stationid">
-                Selecciona una estación:
+    <form method="get" action="index.php" class="metrovalencia-form">
+        <div class="metrovalencia-station">
+            <label for="stationid" class="form-label">
+                {{#str}} station_label, local_metrovalencia {{/str}}
             </label>
 
-            <select name="stationid" id="stationid" class="custom-select">
+            <select name="stationid" id="stationid" class="form-select">
                 {{#stations}}
-                    <option value="{{id}}" {{#selected}}selected{{/selected}}>
-                        {{name}}
-                    </option>
+                    <option value="{{id}}" {{#selected}}selected{{/selected}}>{{name}}</option>
                 {{/stations}}
             </select>
         </div>
 
         <button type="submit" class="btn btn-primary">
-            Consultar
+            {{#str}} station_submit, local_metrovalencia {{/str}}
         </button>
     </form>
 
     {{#hasforecasts}}
-       <h2>Próximos trenes - <strong>{{selectedstation}}</strong></h2>
+        <h2 class="metrovalencia-title">
+            {{#str}} forecasts_title, local_metrovalencia {{/str}} - <strong>{{selectedstation}}</strong>
+        </h2>
 
         <div class="table-responsive">
             <table class="generaltable">
                 <thead>
                     <tr>
-                        <th>Hora</th>
-                        <th>Destino</th>
-                        <th>Línea</th>
-                        <th>Tiempo restante</th>
+                        <th>{{#str}} column_time, local_metrovalencia {{/str}}</th>
+                        <th>{{#str}} column_destination, local_metrovalencia {{/str}}</th>
+                        <th>{{#str}} column_line, local_metrovalencia {{/str}}</th>
+                        <th>{{#str}} column_remaining, local_metrovalencia {{/str}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +81,7 @@
                             <td>{{time}}</td>
                             <td>{{destination}}</td>
                             <td>{{line}}</td>
-                            <td>{{minutes}} min {{seconds}} s</td>
+                            <td>{{remaining}}</td>
                         </tr>
                     {{/forecasts}}
                 </tbody>
@@ -48,8 +90,11 @@
     {{/hasforecasts}}
 
     {{^hasforecasts}}
+        <h2 class="metrovalencia-title">
+            {{#str}} forecasts_title, local_metrovalencia {{/str}} - <strong>{{selectedstation}}</strong>
+        </h2>
         <div class="alert alert-info" role="status">
-            No hay previsiones disponibles en este momento.
+            {{#str}} forecasts_none, local_metrovalencia {{/str}}
         </div>
     {{/hasforecasts}}
 

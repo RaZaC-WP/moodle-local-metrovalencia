@@ -1,4 +1,3 @@
-
 /* Main page container. */
 .metrovalencia-page {
     max-width: 1000px;
@@ -22,7 +21,7 @@
     border-radius: 8px;
 }
 
-.metrovalencia-page .form-group {
+.metrovalencia-page .metrovalencia-station {
     flex: 1;
     min-width: 220px;
     margin-bottom: 0;
@@ -55,7 +54,7 @@
 }
 
 /* Forecast heading. */
-.metrovalencia-page h3 {
+.metrovalencia-page .metrovalencia-title {
     margin-bottom: 20px;
     color: #343a40;
     font-weight: 700;

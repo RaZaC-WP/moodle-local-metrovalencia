@@ -1,24 +1,53 @@
 <?php
-namespace local_metrovalencia;
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_metrovalencia;
 
 /**
  * Client for the MetroAPI service.
  *
  * @package    local_metrovalencia
  * @copyright  2026 RaZaC-WP
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class metrovalencia_api
 {
-
-    /** MetroAPI base URL. */
+    /** @var string MetroAPI base URL. */
     private const BASE_URL = 'https://metroapi.alexbadi.es';
 
-    /** HTTP user agent sent to MetroAPI. */
-    private const USER_AGENT =
-        'moodle-local-metrovalencia/0.1 (Moodle plugin; contact=test@test.com)';
+    /** @var int Maximum seconds to wait for the whole request. */
+    private const TIMEOUT = 20;
+
+    /** @var int Maximum seconds to wait for the connection to be established. */
+    private const CONNECT_TIMEOUT = 20;
+
+    /**
+     * Builds the User-Agent sent to MetroAPI.
+     *
+     * MetroAPI asks clients to identify themselves with a contact e-mail, so
+     * the site support address configured in Moodle is used.
+     *
+     * @return string User agent string.
+     */
+    private static function get_user_agent(): string
+    {
+        $contact = \core_user::get_support_user()->email;
+        
+        return 'moodle-local-metrovalencia/0.1 (Moodle plugin; contact=' . $contact . ')';
+    }
 
     /**
      * Sends a GET request and decodes the JSON response.
@@ -36,16 +65,26 @@ class metrovalencia_api
         $client = new \curl();
 
         $client->setopt([
-            'CURLOPT_USERAGENT' => self::USER_AGENT,
+            'CURLOPT_USERAGENT' => self::get_user_agent(),
         ]);
 
         $client->setHeader([
             'Accept: application/json',
         ]);
 
-        $response = $client->get(self::BASE_URL . $endpoint);
-        $httpcode = $client->get_info()['http_code'] ?? 0;
+        $response = $client->get(self::BASE_URL . $endpoint, [], [
+            'CURLOPT_TIMEOUT' => self::TIMEOUT,
+            'CURLOPT_CONNECTTIMEOUT' => self::CONNECT_TIMEOUT,
+        ]);
+    
+        $errno = $client->get_errno();
+        if ($errno !== 0 || !is_string($response)) {
+            throw new \RuntimeException(
+                'MetroAPI request failed. cURL error: ' . $errno
+            );
+        }
 
+        $httpcode = $client->get_info()['http_code'] ?? 0;
         if ($httpcode !== 200) {
             throw new \RuntimeException(
                 'MetroAPI request failed. HTTP status: ' . $httpcode
@@ -105,40 +144,5 @@ class metrovalencia_api
         }
 
         return $data;
-    }
-
-    /**
-     * Searches for a station using its name or search ID.
-     *
-     * @param string $query Station name or search ID.
-     * @return array Station search result.
-     * @throws \invalid_parameter_exception If the query is empty.
-     * @throws \RuntimeException If the response does not contain a valid result.
-     */
-    public static function search_station(string $query): array
-    {
-        $query = trim($query);
-
-        if ($query === '') {
-            throw new \invalid_parameter_exception(
-                'Station query cannot be empty.'
-            );
-        }
-
-        $data = self::get_json(
-            '/paradas/buscar?q=' . rawurlencode($query)
-        );
-
-        if (
-            !isset($data['res']) ||
-            !is_array($data['res']) ||
-            !isset($data['res']['id_prevision'])
-        ) {
-            throw new \RuntimeException(
-                'MetroAPI response does not contain a valid station search result.'
-            );
-        }
-
-        return $data['res'];
     }
 }

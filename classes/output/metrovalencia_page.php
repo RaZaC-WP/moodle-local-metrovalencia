@@ -1,19 +1,30 @@
 <?php
-namespace local_metrovalencia\output;
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_metrovalencia\output;
 
 /**
  * Data for the Metrovalencia page.
  *
  * @package    local_metrovalencia
- * @copyright  RaZaC-WP - 2026
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2026 RaZaC-WP
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class metrovalencia_page implements \renderable, \templatable
-{
-
-    /** @var array Available stations. */
+class metrovalencia_page implements \renderable, \templatable {
+    /** @var array Available stations, names indexed by ID. */
     private array $stations;
 
     /** @var int Selected station ID. */
@@ -25,15 +36,11 @@ class metrovalencia_page implements \renderable, \templatable
     /**
      * Constructor.
      *
-     * @param array $stations Available stations.
+     * @param array $stations Available stations, names indexed by ID.
      * @param int $stationid Selected station ID.
      * @param array $forecasts Train forecasts.
      */
-    public function __construct(
-        array $stations,
-        int $stationid,
-        array $forecasts
-    ) {
+    public function __construct(array $stations, int $stationid, array $forecasts) {
         $this->stations = $stations;
         $this->stationid = $stationid;
         $this->forecasts = $forecasts;
@@ -45,8 +52,7 @@ class metrovalencia_page implements \renderable, \templatable
      * @param \renderer_base $output Renderer instance.
      * @return array Template context.
      */
-    public function export_for_template(\renderer_base $output): array
-    {
+    public function export_for_template(\renderer_base $output): array {
         $stationoptions = [];
 
         foreach ($this->stations as $id => $name) {
@@ -66,8 +72,10 @@ class metrovalencia_page implements \renderable, \templatable
                 'time' => $forecast['hora'] ?? '—',
                 'destination' => $forecast['destino'] ?? '—',
                 'line' => (string) ($forecast['line'] ?? '—'),
-                'minutes' => intdiv($seconds, 60),
-                'seconds' => $seconds % 60,
+                'remaining' => get_string('remaining_format', 'local_metrovalencia', [
+                    'minutes' => intdiv($seconds, 60),
+                    'seconds' => $seconds % 60,
+                ]),
             ];
         }
 
@@ -76,18 +84,16 @@ class metrovalencia_page implements \renderable, \templatable
             'hasstations' => !empty($stationoptions),
             'forecasts' => $forecasts,
             'hasforecasts' => !empty($forecasts),
-            'selectedstation' => $this->get_selected_station_name()
+            'selectedstation' => $this->get_selected_station_name(),
         ];
     }
 
-    private function get_selected_station_name(): string
-    {
-        foreach ($this->stations as $id => $name) {
-            if ((int) $id === $this->stationid) {
-                return $name;
-            }
-        }
-
-        return '';
+    /**
+     * Returns the name of the selected station.
+     *
+     * @return string Station name, or an empty string if it is not found.
+     */
+    private function get_selected_station_name(): string {
+        return $this->stations[$this->stationid] ?? '';
     }
 }
