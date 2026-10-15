@@ -1,0 +1,56 @@
+<div class="metrovalencia-page">
+
+    <form method="get" action="index.php" class="mb-4">
+        <div class="form-group">
+            <label for="stationid">
+                Selecciona una estación:
+            </label>
+
+            <select name="stationid" id="stationid" class="custom-select">
+                {{#stations}}
+                    <option value="{{id}}" {{#selected}}selected{{/selected}}>
+                        {{name}}
+                    </option>
+                {{/stations}}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Consultar
+        </button>
+    </form>
+
+    {{#hasforecasts}}
+       <h2>Próximos trenes - <strong>{{selectedstation}}</strong></h2>
+
+        <div class="table-responsive">
+            <table class="generaltable">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Destino</th>
+                        <th>Línea</th>
+                        <th>Tiempo restante</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#forecasts}}
+                        <tr>
+                            <td>{{time}}</td>
+                            <td>{{destination}}</td>
+                            <td>{{line}}</td>
+                            <td>{{minutes}} min {{seconds}} s</td>
+                        </tr>
+                    {{/forecasts}}
+                </tbody>
+            </table>
+        </div>
+    {{/hasforecasts}}
+
+    {{^hasforecasts}}
+        <div class="alert alert-info" role="status">
+            No hay previsiones disponibles en este momento.
+        </div>
+    {{/hasforecasts}}
+
+</div>

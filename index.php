@@ -9,6 +9,9 @@ $PAGE->set_url(new moodle_url('/local/metrovalencia/index.php'));
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('pluginname', 'local_metrovalencia'));
 $PAGE->set_heading(get_string('pluginname', 'local_metrovalencia'));
+$PAGE->requires->css(
+    new moodle_url('/local/metrovalencia/assets/css/styles.css')
+);
 
 echo $OUTPUT->header();
 
