@@ -4,7 +4,8 @@ A Moodle local plugin that shows **Metrovalencia stations and real-time train fo
 
 > Unofficial project, not affiliated with Metrovalencia or FGV. Train data comes from a third-party API (see [API](#api)).
 
-<!-- TO DO Add a screenshot here, e.g. ![Metrovalencia page](docs/screenshot.png) -->
+![Metrovalencia page](docs/metrovalencia_example.png)
+*Screenshot taken with sample data.*
 
 ## About the project
 
