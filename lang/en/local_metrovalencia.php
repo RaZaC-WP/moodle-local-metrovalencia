@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['cachedef_forecasts'] = 'Station forecasts';
+$string['cachedef_stations'] = 'Station list';
 $string['column_destination'] = 'Destination';
 $string['column_line'] = 'Line';
 $string['column_remaining'] = 'Time remaining';

@@ -35,13 +35,12 @@ class page {
         try {
             $stations = metrovalencia_api::get_stations();
             $stationoptions = self::build_station_options($stations);
-            
+
             if (empty($stationoptions)) {
                 throw new \RuntimeException('No stations available.');
             }
 
             $defaultstationid = (int) array_key_first($stationoptions);
-            
             $stationid = optional_param('stationid', $defaultstationid, PARAM_INT);
 
             if (!array_key_exists($stationid, $stationoptions)) {

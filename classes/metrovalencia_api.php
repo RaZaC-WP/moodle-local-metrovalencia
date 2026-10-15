@@ -23,16 +23,15 @@ namespace local_metrovalencia;
  * @copyright  2026 RaZaC-WP
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class metrovalencia_api
-{
+class metrovalencia_api {
     /** @var string MetroAPI base URL. */
     private const BASE_URL = 'https://metroapi.alexbadi.es';
 
     /** @var int Maximum seconds to wait for the whole request. */
-    private const TIMEOUT = 20;
+    private const TIMEOUT = 10;
 
     /** @var int Maximum seconds to wait for the connection to be established. */
-    private const CONNECT_TIMEOUT = 20;
+    private const CONNECT_TIMEOUT = 3;
 
     /**
      * Builds the User-Agent sent to MetroAPI.
@@ -42,10 +41,9 @@ class metrovalencia_api
      *
      * @return string User agent string.
      */
-    private static function get_user_agent(): string
-    {
+    private static function get_user_agent(): string {
         $contact = \core_user::get_support_user()->email;
-        
+
         return 'moodle-local-metrovalencia/0.1 (Moodle plugin; contact=' . $contact . ')';
     }
 
@@ -56,8 +54,7 @@ class metrovalencia_api
      * @return array Decoded JSON response.
      * @throws \RuntimeException If the request fails or the response is invalid.
      */
-    private static function get_json(string $endpoint): array
-    {
+    private static function get_json(string $endpoint): array {
         global $CFG;
 
         require_once($CFG->libdir . '/filelib.php');
@@ -76,7 +73,7 @@ class metrovalencia_api
             'CURLOPT_TIMEOUT' => self::TIMEOUT,
             'CURLOPT_CONNECTTIMEOUT' => self::CONNECT_TIMEOUT,
         ]);
-    
+
         $errno = $client->get_errno();
         if ($errno !== 0 || !is_string($response)) {
             throw new \RuntimeException(
@@ -108,8 +105,14 @@ class metrovalencia_api
      * @return array Available stations.
      * @throws \RuntimeException If the response does not contain stations.
      */
-    public static function get_stations(): array
-    {
+    public static function get_stations(): array {
+        $cache = \cache::make('local_metrovalencia', 'stations');
+
+        $stations = $cache->get('list');
+        if ($stations !== false) {
+            return $stations;
+        }
+
         $data = self::get_json('/metrodata/paradas');
 
         if (!isset($data['paradas']) || !is_array($data['paradas'])) {
@@ -117,6 +120,8 @@ class metrovalencia_api
                 'MetroAPI response does not contain a valid station list.'
             );
         }
+
+        $cache->set('list', $data['paradas']);
 
         return $data['paradas'];
     }
@@ -129,10 +134,16 @@ class metrovalencia_api
      * @throws \invalid_parameter_exception If the station ID is invalid.
      * @throws \RuntimeException If the response does not contain forecasts.
      */
-    public static function get_forecasts(int $stationid): array
-    {
+    public static function get_forecasts(int $stationid): array {
         if ($stationid <= 0) {
             throw new \invalid_parameter_exception('Invalid station ID.');
+        }
+
+        $cache = \cache::make('local_metrovalencia', 'forecasts');
+
+        $cached = $cache->get($stationid);
+        if ($cached !== false) {
+            return $cached;
         }
 
         $data = self::get_json('/prevision/' . $stationid . '/parse');
@@ -142,6 +153,8 @@ class metrovalencia_api
                 'MetroAPI response does not contain valid forecasts.'
             );
         }
+
+        $cache->set($stationid, $data);
 
         return $data;
     }
